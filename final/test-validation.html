@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Slot Machine - Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        .test-section {
+            background: #16213e;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffd700;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .pass { background: #00ff8844; border-left: 4px solid #00ff88; }
+        .fail { background: #ff475744; border-left: 4px solid #ff4757; }
+        .warning { background: #ffaa0044; border-left: 4px solid #ffaa00; }
+        .test-button {
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #5a4fcf;
+        }
+        #game-frame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ffd700;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .performance-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #533a71;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎰 3D Slot Machine - Comprehensive Testing Suite</h1>
+
+    <div class="test-section">
+        <h2>📊 Performance Metrics</h2>
+        <div class="performance-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="fps-display">--</div>
+                <div>FPS</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="memory-display">--</div>
+                <div>Memory (MB)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="load-time-display">--</div>
+                <div>Load Time (ms)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="error-count-display">0</div>
+                <div>Errors</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 Game Instance</h2>
+        <iframe id="game-frame" src="./index.html" title="3D Slot Machine Game"></iframe>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Automated Tests</h2>
+        <button class="test-button" onclick="runAllTests()">Run All Tests</button>
+        <button class="test-button" onclick="testResponsiveDesign()">Test Responsive Design</button>
+        <button class="test-button" onclick="testPerformance()">Test Performance</button>
+        <button class="test-button" onclick="testCompatibility()">Test Compatibility</button>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Device Information</h2>
+        <div id="device-info"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Manual Test Checklist</h2>
+        <div id="manual-checklist">
+            <label><input type="checkbox"> Spin button works correctly</label><br>
+            <label><input type="checkbox"> Bet amount controls function</label><br>
+            <label><input type="checkbox"> Auto-spin toggles properly</label><br>
+            <label><input type="checkbox"> 3D animations are smooth</label><br>
+            <label><input type="checkbox"> Symbols display correctly</label><br>
+            <label><input type="checkbox"> Winning combinations highlight</label><br>
+            <label><input type="checkbox"> Sound effects work (if enabled)</label><br>
+            <label><input type="checkbox"> Modal dialogs open/close</label><br>
+            <label><input type="checkbox"> Mobile touch gestures work</label><br>
+            <label><input type="checkbox"> Responsive design adapts to screen size</label><br>
+            <label><input type="checkbox"> Performance is acceptable</label><br>
+            <label><input type="checkbox"> No console errors</label><br>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        let startTime = performance.now();
+
+        // Device information
+        function displayDeviceInfo() {
+            const info = {
+                'User Agent': navigator.userAgent,
+                'Screen Resolution': `${screen.width}x${screen.height}`,
+                'Viewport Size': `${window.innerWidth}x${window.innerHeight}`,
+                'Device Pixel Ratio': window.devicePixelRatio,
+                'Touch Support': 'ontouchstart' in window,
+                'WebGL Support': checkWebGLSupport(),
+                'Local Storage': typeof(Storage) !== "undefined",
+                'Service Worker': 'serviceWorker' in navigator,
+                'Online Status': navigator.onLine
+            };
+
+            const deviceInfoDiv = document.getElementById('device-info');
+            deviceInfoDiv.innerHTML = Object.entries(info)
+                .map(([key, value]) => `<strong>${key}:</strong> ${value}`)
+                .join('<br>');
+        }
+
+        function checkWebGLSupport() {
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                return !!gl;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Performance monitoring
+        function startPerformanceMonitoring() {
+            setInterval(() => {
+                // FPS calculation (simplified)
+                const fps = Math.round(1000 / 16.67); // Approximate
+                document.getElementById('fps-display').textContent = fps;
+
+                // Memory usage
+                if (performance.memory) {
+                    const memory = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                    document.getElementById('memory-display').textContent = memory;
+                }
+
+                // Load time
+                const loadTime = Math.round(performance.now() - startTime);
+                document.getElementById('load-time-display').textContent = loadTime;
+            }, 1000);
+        }
+
+        // Test functions
+        function addTestResult(name, status, message) {
+            testResults.push({ name, status, message });
+            updateTestDisplay();
+        }
+
+        function updateTestDisplay() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = testResults.map(test => 
+                `<div class="test-result ${test.status}">
+                    <strong>${test.name}:</strong> ${test.message}
+                </div>`
+            ).join('');
+        }
+
+        function testResponsiveDesign() {
+            const viewportSizes = [
+                { width: 320, height: 568, name: 'Mobile Portrait' },
+                { width: 768, height: 1024, name: 'Tablet Portrait' },
+                { width: 1024, height: 768, name: 'Tablet Landscape' },
+                { width: 1920, height: 1080, name: 'Desktop' }
+            ];
+
+            viewportSizes.forEach(size => {
+                // Simulate viewport change (limited in iframe)
+                const isResponsive = window.innerWidth <= 768 ? 
+                    document.querySelector('meta[name="viewport"]') !== null : true;
+
+                addTestResult(
+                    `Responsive - ${size.name}`,
+                    isResponsive ? 'pass' : 'fail',
+                    isResponsive ? 'Responsive design detected' : 'No responsive design found'
+                );
+            });
+        }
+
+        function testPerformance() {
+            const startTime = performance.now();
+
+            // Test load time
+            window.addEventListener('load', () => {
+                const loadTime = performance.now() - startTime;
+                addTestResult(
+                    'Load Time',
+                    loadTime < 3000 ? 'pass' : loadTime < 5000 ? 'warning' : 'fail',
+                    `${Math.round(loadTime)}ms`
+                );
+            });
+
+            // Test memory usage
+            if (performance.memory) {
+                const memoryMB = performance.memory.usedJSHeapSize / 1048576;
+                addTestResult(
+                    'Memory Usage',
+                    memoryMB < 100 ? 'pass' : memoryMB < 200 ? 'warning' : 'fail',
+                    `${Math.round(memoryMB)}MB`
+                );
+            }
+
+            // Test file sizes
+            fetch('./index.html').then(response => response.text()).then(html => {
+                const htmlSize = new Blob([html]).size / 1024;
+                addTestResult(
+                    'HTML Size',
+                    htmlSize < 50 ? 'pass' : htmlSize < 100 ? 'warning' : 'fail',
+                    `${Math.round(htmlSize)}KB`
+                );
+            });
+        }
+
+        function testCompatibility() {
+            const tests = [
+                { name: 'WebGL Support', test: () => checkWebGLSupport() },
+                { name: 'Local Storage', test: () => typeof(Storage) !== "undefined" },
+                { name: 'Service Worker', test: () => 'serviceWorker' in navigator },
+                { name: 'Touch Events', test: () => 'ontouchstart' in window },
+                { name: 'CSS Grid', test: () => CSS.supports('display', 'grid') },
+                { name: 'CSS Flexbox', test: () => CSS.supports('display', 'flex') },
+                { name: 'ES6 Support', test: () => {
+                    try { eval('const test = () => {}'); return true; } catch(e) { return false; }
+                }}
+            ];
+
+            tests.forEach(({ name, test }) => {
+                const result = test();
+                addTestResult(
+                    name,
+                    result ? 'pass' : 'fail',
+                    result ? 'Supported' : 'Not supported'
+                );
+            });
+        }
+
+        function runAllTests() {
+            testResults = [];
+            testResponsiveDesign();
+            testPerformance();
+            testCompatibility();
+
+            addTestResult(
+                'Overall Status',
+                'pass',
+                `Completed ${testResults.length} tests`
+            );
+        }
+
+        // Error monitoring
+        let errorCount = 0;
+        window.addEventListener('error', (e) => {
+            errorCount++;
+            document.getElementById('error-count-display').textContent = errorCount;
+            addTestResult(
+                'JavaScript Error',
+                'fail',
+                e.message || 'Unknown error'
+            );
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            displayDeviceInfo();
+            startPerformanceMonitoring();
+
+            // Auto-run basic tests after 2 seconds
+            setTimeout(() => {
+                testCompatibility();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

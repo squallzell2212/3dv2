@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="3D Steampunk Slot Machine - A 5x5 grid slot machine game with 3D graphics and RPG elements">
+    <meta name="keywords" content="slot machine, 3D game, steampunk, WebGL, Three.js">
+    <title>3D Steampunk Slot Machine</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="./css/main.css" as="style">
+    <link rel="preload" href="./libs/three.min.js" as="script">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./css/main.css">
+    
+    <!-- Favicon and app icons -->
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SlotMachine3D">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="msapplication-TileColor" content="#1a1a2e">
+    <meta name="msapplication-tap-highlight" content="no">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2>Loading 3D Steampunk Slot Machine...</h2>
+            <div class="loading-progress">
+                <div class="loading-bar" id="loading-bar"></div>
+            </div>
+            <p class="loading-text">Initializing 3D engine...</p>
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <main id="game-container" class="game-container">
+        <!-- Header Section -->
+        <header class="game-header">
+            <div class="header-content">
+                <h1 class="game-title">
+                    <span class="title-icon">⚙️</span>
+                    Steampunk Slot Machine
+                    <span class="title-icon">⚙️</span>
+                </h1>
+                <div class="header-controls">
+                    <button id="help-btn" class="control-btn" title="Help (H)" aria-label="Open help">
+                        <span class="btn-icon">❓</span>
+                    </button>
+                    <button id="settings-btn" class="control-btn" title="Settings (S)" aria-label="Open settings">
+                        <span class="btn-icon">⚙️</span>
+                    </button>
+                    <button id="fullscreen-btn" class="control-btn" title="Fullscreen" aria-label="Toggle fullscreen">
+                        <span class="btn-icon">⛶</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Game Stats Panel -->
+        <section class="stats-panel">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Score</span>
+                    <span class="stat-value" id="score-display">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Health</span>
+                    <div class="health-bar">
+                        <div class="health-fill" id="health-fill" style="width: 100%"></div>
+                        <span class="health-text" id="health-text">100/100</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Combo</span>
+                    <span class="stat-value combo-display" id="combo-display">1.0x</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Jackpot</span>
+                    <div class="jackpot-progress">
+                        <div class="jackpot-fill" id="jackpot-fill" style="width: 0%"></div>
+                        <span class="jackpot-text" id="jackpot-text">0%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Game Area -->
+        <section class="game-area">
+            <!-- 3D Slot Machine Container -->
+            <div class="slot-container">
+                <div id="slot-machine-3d" class="slot-machine-3d" role="application" aria-label="3D Slot Machine Game">
+                    <!-- Three.js canvas will be inserted here -->
+                </div>
+                
+                <!-- Overlay UI Elements -->
+                <div class="slot-overlay">
+                    <!-- Winning Lines Display -->
+                    <div id="winning-lines" class="winning-lines" aria-live="polite"></div>
+                    
+                    <!-- Damage Numbers -->
+                    <div id="damage-numbers" class="damage-numbers" aria-live="polite"></div>
+                    
+                    <!-- Bonus Effects -->
+                    <div id="bonus-effects" class="bonus-effects" aria-live="polite"></div>
+                </div>
+            </div>
+
+            <!-- Game Controls -->
+            <div class="game-controls">
+                <div class="control-group">
+                    <button id="spin-btn" class="spin-button" aria-label="Spin the reels (Space)">
+                        <span class="spin-text">SPIN</span>
+                        <span class="spin-cost">Cost: 10</span>
+                    </button>
+                </div>
+                
+                <div class="control-group">
+                    <label for="bet-amount" class="control-label">Bet Amount:</label>
+                    <div class="bet-controls">
+                        <button id="bet-decrease" class="bet-btn" aria-label="Decrease bet">-</button>
+                        <input type="number" id="bet-amount" class="bet-input" value="10" min="1" max="100" aria-label="Bet amount">
+                        <button id="bet-increase" class="bet-btn" aria-label="Increase bet">+</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <button id="auto-spin-btn" class="auto-spin-button" aria-label="Toggle auto-spin">
+                        <span class="auto-spin-text">AUTO SPIN</span>
+                        <span class="auto-spin-status">OFF</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Side Panels -->
+        <aside class="side-panels">
+            <!-- Active Bonuses Panel -->
+            <section class="bonus-panel">
+                <h3 class="panel-title">Active Bonuses</h3>
+                <div id="active-bonuses" class="bonus-list" aria-live="polite">
+                    <p class="no-bonuses">No active bonuses</p>
+                </div>
+            </section>
+
+            <!-- World Progress Panel -->
+            <section class="world-panel">
+                <h3 class="panel-title">World Progress</h3>
+                <div class="world-info">
+                    <div class="current-world">
+                        <span class="world-name" id="world-name">Mechanical Foundry</span>
+                        <span class="world-level" id="world-level">Level 1</span>
+                    </div>
+                    <div class="boss-info">
+                        <div class="boss-name" id="boss-name">Mechanical Spider</div>
+                        <div class="boss-health">
+                            <div class="boss-health-bar">
+                                <div class="boss-health-fill" id="boss-health-fill" style="width: 100%"></div>
+                            </div>
+                            <span class="boss-health-text" id="boss-health-text">100/100</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Wins Panel -->
+            <section class="wins-panel">
+                <h3 class="panel-title">Recent Wins</h3>
+                <div id="recent-wins" class="wins-list" aria-live="polite">
+                    <p class="no-wins">No recent wins</p>
+                </div>
+            </section>
+        </aside>
+
+        <!-- Achievement Notifications -->
+        <div id="achievement-notifications" class="achievement-notifications" aria-live="assertive"></div>
+    </main>
+
+    <!-- Modal Dialogs -->
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal" role="dialog" aria-labelledby="help-title" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="help-title">Game Help</h2>
+                <button class="modal-close" aria-label="Close help">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-section">
+                    <h3>How to Play</h3>
+                    <p>Match 3 or more symbols in a line to deal damage to bosses. Defeat bosses to progress through worlds.</p>
+                </div>
+                <div class="help-section">
+                    <h3>Controls</h3>
+                    <ul>
+                        <li><kbd>Space</kbd> - Spin the reels</li>
+                        <li><kbd>H</kbd> - Open help</li>
+                        <li><kbd>S</kbd> - Open settings</li>
+                        <li><kbd>Esc</kbd> - Close modals</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h3>Symbols & Damage</h3>
+                    <div class="symbol-guide">
+                        <div class="symbol-item"><span class="symbol">💎</span> Crystal - 35 DMG</div>
+                        <div class="symbol-item"><span class="symbol">⚔️</span> Sword - 30 DMG</div>
+                        <div class="symbol-item"><span class="symbol">🛡️</span> Shield - 25 DMG</div>
+                        <div class="symbol-item"><span class="symbol">🦾</span> Armor - 22 DMG</div>
+                        <div class="symbol-item"><span class="symbol">⚙️</span> Gear - 20 DMG</div>
+                        <div class="symbol-item"><span class="symbol">🔧</span> Pipe - 15 DMG</div>
+                        <div class="symbol-item"><span class="symbol">🧪</span> Potion - 10 DMG</div>
+                        <div class="symbol-item"><span class="symbol">🔘</span> Button - 5 DMG</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal" role="dialog" aria-labelledby="settings-title" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="settings-title">Game Settings</h2>
+                <button class="modal-close" aria-label="Close settings">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-item">
+                    <label for="sound-toggle">Sound Effects</label>
+                    <input type="checkbox" id="sound-toggle" checked>
+                </div>
+                <div class="setting-item">
+                    <label for="animations-toggle">Animations</label>
+                    <input type="checkbox" id="animations-toggle" checked>
+                </div>
+                <div class="setting-item">
+                    <label for="graphics-quality">Graphics Quality</label>
+                    <select id="graphics-quality">
+                        <option value="high">High</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label for="auto-spin-count">Auto-Spin Count</label>
+                    <input type="number" id="auto-spin-count" value="10" min="1" max="100">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal" role="dialog" aria-labelledby="game-over-title" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="game-over-title">Game Over</h2>
+            </div>
+            <div class="modal-body">
+                <div class="game-over-stats">
+                    <p>Final Score: <span id="final-score">0</span></p>
+                    <p>Bosses Defeated: <span id="bosses-defeated">0</span></p>
+                    <p>Total Damage: <span id="total-damage">0</span></p>
+                </div>
+                <div class="game-over-actions">
+                    <button id="restart-btn" class="action-btn">Play Again</button>
+                    <button id="share-score-btn" class="action-btn">Share Score</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal" class="modal" role="dialog" aria-labelledby="victory-title" aria-hidden="true">
+        <div class="modal-content victory-content">
+            <div class="modal-header">
+                <h2 id="victory-title">Victory!</h2>
+            </div>
+            <div class="modal-body">
+                <div class="victory-message">
+                    <p>Congratulations! You've defeated all bosses and conquered all worlds!</p>
+                    <div class="victory-stats">
+                        <p>Final Score: <span id="victory-score">0</span></p>
+                        <p>Total Spins: <span id="total-spins">0</span></p>
+                        <p>Win Rate: <span id="win-rate">0%</span></p>
+                    </div>
+                </div>
+                <div class="victory-actions">
+                    <button id="new-game-btn" class="action-btn">New Game+</button>
+                    <button id="continue-btn" class="action-btn">Continue Playing</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="./libs/three.min.js"></script>
+    <script src="./js/slot-game.js"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            });
+        }
+    </script>
+    <div id="performance-display" style="display: none;">FPS: -- | Memory: --MB</div>
+</body>
+</html>
