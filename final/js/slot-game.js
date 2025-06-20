@@ -621,7 +621,8 @@ class SlotMachineGame {
         // Game state
         this.playerHealth = 100;
         this.maxHealth = 100;
-        this.score = 0;
+        // Start players with some credits so they can spin immediately
+        this.score = 100;
         this.totalSpins = 0;
         this.totalWins = 0;
         this.betAmount = 10;
@@ -668,6 +669,8 @@ class SlotMachineGame {
             betDecrease: document.getElementById('bet-decrease'),
             betIncrease: document.getElementById('bet-increase'),
             autoSpinBtn: document.getElementById('auto-spin-btn'),
+            addFundsBtn: document.getElementById('add-funds-btn'),
+            addFundsAmount: document.getElementById('add-funds-amount'),
             
             activeBonuses: document.getElementById('active-bonuses'),
             worldName: document.getElementById('world-name'),
@@ -704,6 +707,15 @@ class SlotMachineGame {
         
         // Auto spin
         this.elements.autoSpinBtn.addEventListener('click', () => this.toggleAutoSpin());
+
+        // Add funds control
+        this.elements.addFundsBtn.addEventListener('click', () => {
+            const amount = parseInt(this.elements.addFundsAmount.value) || 0;
+            if (amount > 0) {
+                this.score += amount;
+                this.updateUI();
+            }
+        });
         
         // Modal controls
         this.elements.helpBtn.addEventListener('click', () => this.showModal('help'));
